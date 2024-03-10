@@ -2,7 +2,7 @@
 using EcommerceApplication_BAL.Services;
 using EcommerceApplication_DAL.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging; // Add this namespace
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

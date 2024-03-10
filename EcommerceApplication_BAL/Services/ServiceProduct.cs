@@ -1,5 +1,6 @@
 ﻿using EcommerceApplication_DAL.Contracts;
 using EcommerceApplication_DAL.Models;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,13 @@ namespace EcommerceApplication_BAL.Services
     {
         private readonly IRepository<Product> _repository;
         private readonly IRepository<Category> _categoryRepository;
+        private readonly IMemoryCache _cache;
 
-        public ServiceProduct(IRepository<Product> repository, IRepository<Category> categoryRepository)
+
+        public ServiceProduct(IRepository<Product> repository, IRepository<Category> categoryRepository, IMemoryCache cache)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
@@ -50,7 +54,18 @@ namespace EcommerceApplication_BAL.Services
 
         public IEnumerable<Product> GetAllProducts()
         {
-            return _repository.GetAll();
+            const string cacheKey = "AllProducts";
+
+            if (!_cache.TryGetValue(cacheKey, out IEnumerable<Product> products))
+            {
+                // Data not in cache, retrieve from repository
+                products = _repository.GetAll();
+
+                // Store data in cache
+                _cache.Set(cacheKey, products, TimeSpan.FromMinutes(10)); // Cache for 10 minutes
+            }
+
+            return products;
         }
 
         public Product GetProductById(int id)
